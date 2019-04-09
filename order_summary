@@ -1,0 +1,11 @@
+SELECT
+	SUM( o.pay_price ) 
+FROM
+	ol_order o
+	LEFT JOIN ol_user u ON u.id = o.user_id 
+WHERE
+	o.`status` = 1 
+	AND o.package_course_type = 1 
+	AND o.pay_time BETWEEN UNIX_TIMESTAMP( '2019-03-01' ) AND UNIX_TIMESTAMP( '2019-04-01' ) 
+	AND u.is_test_user =0 #过滤掉测试用户
+  -- o.renew_type=1 #为非续费订单
