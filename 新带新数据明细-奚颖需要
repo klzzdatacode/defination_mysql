@@ -1,0 +1,59 @@
+SELECT u.id '用户ID'
+,u.name '学员名字'
+,IF(u.id IN(SELECT invite_uid FROM ol_present_user),p1.alg,
+IF(u.id in (SELECT user_id from ol_present_user),1,'无')) '代数'#判断转介绍逻辑条件
+,s.name '渠道来源'
+,a1.nickname '市场所属'
+,a2.nickname '所属销售'
+,FROM_UNIXTIME(u.create_time) '注册时间'
+,出席时间
+,f.follow_status '跟进状态'
+,活动成交时间
+,IF(u.id in (SELECT student_id from ol_live_student),'有效','无效')'排课情况'
+,活动成交金额
+,IF(u.id IN (SELECT `invite_uid` FROM `ol_present_red_packet`),'是','否')'是否领取红包'
+,活动备注,正课成交时间,正课成交金额
+,p2.name
+FROM ol_user u LEFT JOIN ol_user_source  s ON u.source=s.id
+LEFT JOIN ol_present_user p1 ON p1.invite_uid=u.id 
+LEFT JOIN ol_admin_user a1 ON a1.id=u.market_uid
+LEFT JOIN ol_admin_user a2 ON a2.id=u.counselor_id
+LEFT JOIN (SELECT
+	`ls`.`student_id` '用户ID',FROM_UNIXTIME(`l`.`start_time`)'出席时间'
+FROM
+	`ol_live` `l`INNER JOIN `ol_live_student` `ls` ON `ls`.`live_id` = `l`.`id`
+LEFT JOIN `ol_user` `user` ON `user`.`id` = `ls`.`student_id`
+WHERE
+	`l`.`course_type` IN (1, 2, 3)#课程类型：1：正课；2：demo课；3：活动课
+AND `l`.`status` = 1#课程已启用
+AND `l`.`start_time` BETWEEN 1550160000 AND 1554220800#出席时间
+AND `ls`.`check_status` = 1#学员签到（出席）
+AND l.live_status = 2 #已下课
+AND (
+	ls.student_id NOT IN (
+		SELECT
+			`ls`.`student_id`
+		FROM
+			`ol_live` `l`
+		INNER JOIN `ol_live_student` `ls` ON `ls`.`live_id` = `l`.`id`
+		WHERE
+			`ls`.`check_status` = 1
+		AND `l`.`course_type` IN (1, 2, 3)
+		AND `l`.`status` = 1
+    AND `l`.`live_status` = 2
+		AND `l`.`start_time` < 1550160000#首次出席的判断条件
+		GROUP BY
+			`ls`.`student_id`
+	)
+)
+GROUP BY
+	`ls`.`student_id`) cx ON cx.用户ID=u.id
+LEFT JOIN ol_user_list_follow f ON f.user_id =u.id
+LEFT JOIN (SELECT user_id,FROM_UNIXTIME(pay_time)'活动成交时间',pay_price '活动成交金额',
+node '活动备注' FROM ol_order WHERE `status`=1 AND package_course_type=2) o1 ON u.id=o1.user_id
+LEFT JOIN (SELECT user_id,FROM_UNIXTIME(pay_time)'正课成交时间', pay_price '正课成交金额'
+FROM ol_order WHERE `status`=1 AND package_course_type=1)o2 ON u.id=o2.user_id
+LEFT JOIN ol_present p2 ON p2.id=u.hd_id
+WHERE hd_type = 1 AND hd_id IN(SELECT id FROM `ol_present` WHERE TYPE = 0)
+AND u.create_time BETWEEN 1550160000 AND 1554220800#注册时间
+GROUP BY u.id; 
