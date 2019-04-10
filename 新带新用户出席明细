@@ -1,0 +1,17 @@
+#新带新二代以上的用户出席以及对应的一代用户
+SELECT pu.user_id'推荐人'
+,pu.invite_uid'被推荐人'
+,FROM_UNIXTIME(MIN(l.start_time))'被推荐人出席时间'
+,s.`name`'渠道'
+FROM ol_present_user pu 
+INNER JOIN
+ol_live_student ls  on pu.invite_uid=ls.student_id
+INNER JOIN ol_live l on ls.live_id=l.id
+LEFT JOIN ol_user u on u.id=pu.user_id
+LEFT JOIN ol_user_source s on u.source=s.id
+where l.`status`=1 AND ls.check_status=1 AND l.live_status=2 and l.course_type in (1,2,3) #出席条件
+AND l.start_time BETWEEN 1541001600 AND 1554048000#出席时间
+AND pu.user_id in (SELECT id from ol_user where create_time BETWEEN 1541001600 AND 1554048000
+AND  hd_type = 1 AND hd_id IN(SELECT id FROM `ol_present` WHERE TYPE = 0)
+)#A用户为推荐有礼的用户
+GROUP BY pu.invite_uid
