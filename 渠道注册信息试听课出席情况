@@ -3,7 +3,7 @@
 	,FROM_UNIXTIME(u.create_time) 注册时间
 	,(case ls.check_status when 0 then '未签到' when 1 then'签到'  when 2 then '请假' when 3 then '旷课'when 4 then'取消' end) 考勤状态
 	,FROM_UNIXTIME(l.start_time) 出席时间
-	,(case l.course_type when 1 then '试听课' when 2 then '试听课' END) 课程类型
+	,(case l.course_type when 1 then '正课' when 2 then '试听课' END) 课程类型
 	,IF(us.pid =0 ,us.`name`,IF(us1.pid =0,us1.`name`,IF(us2.pid =0 ,us2.name,IF(us3.pid =0 ,us3.`name`,IF(us4.`pid`=0,us4.`name`,IF(us5.pid=0,us5.`name`,IF(us6.pid=0,us6.`name`,IF(us7.pid=0,us7.`name`,'未知')))))))) 大类渠道 
 	
 	FROM ol_user u 
