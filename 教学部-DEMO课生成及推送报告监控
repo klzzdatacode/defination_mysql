@@ -1,0 +1,18 @@
+SELECT l.id 直播课ID
+,FROM_UNIXTIME(l.start_time) 上课时间
+,au.`name` 老师名
+,au.nickname 老师昵称
+,ls.student_id 学生id
+,u.`name` 学生名字
+,(case ls.check_status when 0 then '未签到' when 1 then'签到'  when 2 then '请假' when 3 then '旷课'when 4 then'取消' end) 考勤状态
+,(case sc.push_state when 0 then '未推送' when 1 then '推送成功' when 2 then '推送失败' else '未生成报告'end ) 评价推送状态
+-- ,(SELECT u.id,au.`name` FROM ol_user u LEFT JOIN ol_admin_user au on au.id=u.counselor_id where u.id=ls.student_id ) 负责该学生的CC
+from ol_live_student ls 
+LEFT JOIN ol_live l on l.id=ls.live_id
+LEFT JOIN ol_admin_user au on au.id=l.teacher_id
+LEFT JOIN ol_live_student_comment sc on sc.live_id=l.id and ls.student_id=ls.student_id
+LEFT JOIN ol_user u on u.id=ls.student_id
+WHERE l.course_type=2 and u.is_test_user=0 and au.`name` not like "%测试%"     -- AND sc.push_state in (0,2,3) 
+-- and ls.check_status=1 
+and l.start_time > UNIX_TIMESTAMP(now())-86400 #根据需要 修改时间参数
+GROUP BY l.id,ls.student_id
