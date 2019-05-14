@@ -1,9 +1,0 @@
-SELECT us.`name`,us1.`name`,us2.`name`,us3.`name`	,us4.`name`,us5.`name`,us6.`name`,us7.`name`
-FROM ol_user_source us
-LEFT JOIN ol_user_source us1 on us.id=us1.pid
-LEFT JOIN ol_user_source us2 on us1.id=us2.pid
-LEFT JOIN ol_user_source us3 on us2.id=us3.pid
-LEFT JOIN ol_user_source us4 on us3.id=us4.pid
-LEFT JOIN ol_user_source us5 on us4.id=us5.pid
-LEFT JOIN ol_user_source us6 on us5.id=us6.pid
-LEFT JOIN ol_user_source us7 on us6.id=us7.pid
